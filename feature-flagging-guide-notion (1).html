@@ -1,0 +1,2227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unleash Feature Flagging Guide</title>
+    <script type="text/javascript" nonce="01f011cfb62842a5abbe073eea0" src="//local.adguard.org?ts=1772637829359&amp;type=content-script&amp;dmn=file.notion.so&amp;url=https%3A%2F%2Ffile.notion.so%2Ff%2Ff%2F0b87aead-5d1d-81b2-b3eb-0003d1844fa0%2F469b4a02-a822-49dc-a6e7-74ae6c702ea5%2Ffeature-flagging-guide.html%3Ftable%3Dblock%26id%3D3197aead-5d1d-8029-b579-d2bc8aa29178%26spaceId%3D0b87aead-5d1d-81b2-b3eb-0003d1844fa0%26expirationTimestamp%3D1772668800000%26signature%3DERtRwP65Ma2m4Sch9sZylElfGYw2wunOlbvWVBrsdSo%26download%3Dtrue%26downloadName%3Dfeature-flagging-guide.html&amp;app=com.google.Chrome&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1&amp;stealth=1&amp;st-push&amp;st-loc&amp;st-java&amp;st-dnt"></script><script type="text/javascript" nonce="01f011cfb62842a5abbe073eea0" src="//local.adguard.org?ts=1772637829359&amp;name=AdGuard%20Extra&amp;type=user-script"></script><link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* ===========================================
+           CSS CUSTOM PROPERTIES (WARM EDITORIAL THEME)
+           =========================================== */
+        :root {
+            /* Colors - Warm Earth Palette */
+            --bg-primary: #faf8f5;
+            --bg-secondary: #f0ebe3;
+            --bg-card: #ffffff;
+            --accent-forest: #2d5a3d;
+            --accent-terracotta: #c45d3a;
+            --accent-sage: #7a9e7e;
+            --accent-warm-gray: #8b8680;
+            --text-primary: #1a1a1a;
+            --text-secondary: #5a5a5a;
+            --text-muted: #7a7a7a;
+            --border-color: #e5e0d8;
+            --code-bg: #f5f2ed;
+
+            /* Shadow effects (subtle, not harsh) */
+            --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.06);
+            --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-glow-forest: 0 0 12px rgba(45, 90, 61, 0.15);
+
+            /* Typography - Refined & Readable */
+            --font-display: 'Cormorant Garamond', serif;
+            --font-body: 'DM Sans', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            --title-size: clamp(2.25rem, 5vw, 3.75rem);
+            --h2-size: clamp(1.6rem, 3.5vw, 2.4rem);
+            --h3-size: clamp(1.15rem, 2vw, 1.45rem);
+            --body-size: clamp(0.95rem, 1.4vw, 1.15rem);
+            --small-size: clamp(0.75rem, 1.1vw, 0.9rem);
+
+            /* Spacing */
+            --slide-padding: clamp(2rem, 5vw, 4.5rem);
+            --content-gap: clamp(1.25rem, 2.5vw, 2.25rem);
+
+            /* Animation - Smooth & Sophisticated */
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+            --duration-normal: 0.6s;
+            --duration-slow: 1s;
+        }
+
+        /* ===========================================
+           BASE STYLES
+           =========================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-snap-type: y mandatory;
+            height: 100%;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            height: 100%;
+        }
+
+        /* Removed scanline effect - we're not in the Matrix anymore */
+
+        /* ===========================================
+           SLIDE CONTAINER
+           =========================================== */
+        .slide {
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            padding: var(--slide-padding);
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            max-height: calc(100vh - calc(var(--slide-padding) * 2) - 1.5rem);
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            overflow-y: auto;
+        }
+
+        /* ===========================================
+           TYPOGRAPHY
+           =========================================== */
+        h1, h2, h3 {
+            font-family: var(--font-display);
+            font-weight: 700;
+            line-height: 1.2;
+            text-wrap: balance;
+        }
+
+        h1 {
+            font-size: var(--title-size);
+            margin-bottom: var(--content-gap);
+        }
+
+        h2 {
+            font-size: var(--h2-size);
+            margin-bottom: clamp(1rem, 2vw, 1.5rem);
+        }
+
+        h3 {
+            font-size: var(--h3-size);
+            margin-bottom: clamp(0.6rem, 1.2vw, 0.9rem);
+        }
+
+        p {
+            font-size: var(--body-size);
+            line-height: 1.6;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .accent {
+            color: var(--accent-forest);
+        }
+
+        .accent-magenta {
+            color: var(--accent-terracotta);
+        }
+
+        .accent-purple {
+            color: var(--accent-sage);
+        }
+
+        .label {
+            font-family: var(--font-display);
+            font-size: clamp(0.75rem, 1.1vw, 0.9rem);
+            color: var(--accent-magenta);
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            margin-bottom: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .label::before {
+            content: '>';
+            color: var(--accent-forest);
+        }
+
+        /* ===========================================
+           PROGRESS BAR
+           =========================================== */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-forest), var(--accent-terracotta));
+            z-index: 1001;
+            transition: width 0.3s ease;
+        }
+
+        /* ===========================================
+           NAVIGATION DOTS
+           =========================================== */
+        .nav-dots {
+            position: fixed;
+            right: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            z-index: 100;
+        }
+
+        .nav-dot {
+            width: 10px;
+            height: 10px;
+            border: 2px solid var(--accent-forest);
+            border-radius: 50%;
+            background: transparent;
+            cursor: pointer;
+            transition: background 0.3s ease, box-shadow 0.3s ease;
+            touch-action: manipulation;
+        }
+
+        .nav-dot:hover {
+            box-shadow: var(--shadow-glow-forest);
+        }
+
+        .nav-dot:focus-visible {
+            outline: 2px solid var(--accent-terracotta);
+            outline-offset: 2px;
+        }
+
+        .nav-dot.active {
+            background: var(--accent-forest);
+            box-shadow: var(--shadow-glow-forest);
+        }
+
+        /* ===========================================
+           ANIMATIONS
+           =========================================== */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity var(--duration-normal) var(--ease-out-expo),
+                        transform var(--duration-normal) var(--ease-out-expo);
+        }
+
+        .slide.visible .reveal {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .reveal:nth-child(1) { transition-delay: 0.1s; }
+        .reveal:nth-child(2) { transition-delay: 0.2s; }
+        .reveal:nth-child(3) { transition-delay: 0.3s; }
+        .reveal:nth-child(4) { transition-delay: 0.4s; }
+        .reveal:nth-child(5) { transition-delay: 0.5s; }
+        .reveal:nth-child(6) { transition-delay: 0.6s; }
+        .reveal:nth-child(7) { transition-delay: 0.7s; }
+        .reveal:nth-child(8) { transition-delay: 0.8s; }
+
+        .reveal-scale {
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity var(--duration-normal) var(--ease-out-expo),
+                        transform var(--duration-normal) var(--ease-out-expo);
+        }
+
+        .slide.visible .reveal-scale {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* ===========================================
+           SPECIAL SLIDE STYLES
+           =========================================== */
+
+        /* Title Slide */
+        .title-slide h1 {
+            background: linear-gradient(135deg, var(--accent-forest) 0%, var(--accent-terracotta) 50%, var(--accent-sage) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: none;
+        }
+
+        .title-slide .subtitle {
+            font-size: clamp(1rem, 2vw, 1.5rem);
+            color: var(--text-secondary);
+            margin-bottom: var(--content-gap);
+        }
+
+        .title-slide .meta {
+            font-size: var(--small-size);
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+
+        /* Section Divider */
+        .section-divider {
+            text-align: center;
+        }
+
+        .section-divider h1 {
+            background: linear-gradient(135deg, var(--accent-forest), var(--accent-terracotta));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-divider .part-number {
+            font-family: var(--font-display);
+            font-size: var(--small-size);
+            color: var(--accent-forest);
+            letter-spacing: 0.3em;
+            margin-bottom: 1rem;
+        }
+
+        /* Code Blocks */
+        .code-block {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-top: 3px solid var(--accent-forest);
+            padding: clamp(0.85rem, 1.5vw, 1.25rem);
+            font-family: var(--font-mono);
+            font-size: clamp(0.7rem, 1vw, 0.85rem);
+            line-height: 1.55;
+            overflow-x: auto;
+            margin: 0.85rem 0;
+            position: relative;
+        }
+
+        .code-block::before {
+            content: 'CODE';
+            position: absolute;
+            top: 0.5rem;
+            right: 1rem;
+            font-family: var(--font-body);
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            letter-spacing: 0.2em;
+        }
+
+        .code-block .keyword { color: var(--accent-terracotta); }
+        .code-block .string { color: var(--accent-forest); }
+        .code-block .comment { color: var(--text-muted); font-style: italic; }
+        .code-block .function { color: var(--accent-sage); }
+        .code-block .variable { color: var(--accent-warm-gray); }
+        .code-block .tag { color: var(--accent-terracotta); }
+        .code-block .attr { color: var(--accent-forest); }
+        .code-block .punctuation { color: var(--text-secondary); }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            margin: 0.85rem 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: clamp(0.75rem, 1vw, 0.9rem);
+        }
+
+        th {
+            text-align: left;
+            padding: clamp(0.5rem, 1vw, 0.85rem);
+            background: rgba(122, 158, 126, 0.08);
+            font-family: var(--font-body);
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent-forest);
+            border-bottom: 1px solid var(--accent-sage);
+        }
+
+        td {
+            padding: clamp(0.5rem, 1vw, 0.85rem);
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            line-height: 1.45;
+        }
+
+        tr:hover td {
+            background: rgba(122, 158, 126, 0.05);
+        }
+
+        code {
+            font-family: var(--font-mono);
+            font-size: 0.9em;
+            background: var(--code-bg);
+            padding: 0.2em 0.5em;
+            border: 1px solid var(--border-color);
+            color: var(--accent-forest);
+        }
+
+        /* Lists */
+        .bullet-list {
+            list-style: none;
+            margin: 0.85rem 0;
+        }
+
+        .bullet-list li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: var(--text-secondary);
+            font-size: var(--body-size);
+            line-height: 1.5;
+        }
+
+        .bullet-list li::before {
+            content: '>';
+            position: absolute;
+            left: -10px;
+            color: var(--accent-forest);
+            font-weight: 600;
+        }
+
+        .numbered-list {
+            list-style: none;
+            counter-reset: item;
+            margin: 0.85rem 0;
+        }
+
+        .numbered-list li {
+            counter-increment: item;
+            padding: 0.5rem 0;
+            padding-left: 2.5rem;
+            position: relative;
+            color: var(--text-secondary);
+            font-size: var(--body-size);
+            line-height: 1.5;
+        }
+
+        .numbered-list li::before {
+            content: counter(item);
+            position: absolute;
+            left: 0;
+            width: 1.75rem;
+            height: 1.75rem;
+            background: rgba(45, 90, 61, 0.1);
+            border: 2px solid var(--accent-forest);
+            color: var(--accent-forest);
+            font-family: var(--font-body);
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Diagram Box */
+        .diagram-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: clamp(1rem, 2vw, 1.5rem);
+            margin: 1rem 0;
+            position: relative;
+        }
+
+        .diagram-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-forest), transparent);
+        }
+
+        .diagram-box pre {
+            font-family: var(--font-mono);
+            font-size: clamp(0.65rem, 1vw, 0.8rem);
+            line-height: 1.5;
+            color: var(--text-secondary);
+            white-space: pre;
+            overflow-x: auto;
+        }
+
+        /* Callout Box */
+        .callout {
+            background: rgba(122, 158, 126, 0.08);
+            border-left: 3px solid var(--accent-forest);
+            padding: clamp(0.7rem, 1.4vw, 1.1rem);
+            margin: 0.85rem 0;
+        }
+
+        .callout.warning {
+            background: rgba(196, 93, 58, 0.08);
+            border-left-color: var(--accent-terracotta);
+        }
+
+        .callout-title {
+            font-family: var(--font-body);
+            font-size: clamp(0.75rem, 1vw, 0.85rem);
+            color: var(--accent-forest);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.6rem;
+            font-weight: 600;
+        }
+
+        .callout.warning .callout-title {
+            color: var(--accent-terracotta);
+        }
+
+        .callout.error {
+            background: rgba(196, 93, 58, 0.12);
+            border-left-color: var(--accent-terracotta);
+        }
+
+        .callout.error .callout-title {
+            color: var(--accent-terracotta);
+            font-weight: 700;
+        }
+
+        .callout p {
+            margin: 0;
+            font-size: clamp(0.75rem, 1vw, 0.9rem);
+            line-height: 1.5;
+        }
+
+        /* Check List */
+        .check-list {
+            list-style: none;
+            margin: 0.85rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-width: 700px;
+        }
+
+        .check-list li {
+            position: relative;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-shadow: var(--shadow-soft);
+            transition: transform var(--duration-normal) var(--ease-out-expo),
+                        box-shadow var(--duration-normal) var(--ease-out-expo),
+                        opacity 0.3s ease;
+            overflow: hidden;
+        }
+
+        .check-list li:hover {
+            transform: translateX(4px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .check-list label {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 0.65rem 0.85rem 0.65rem 1rem;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .check-list input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 1.2rem;
+            height: 1.2rem;
+            min-width: 1.2rem;
+            border: 2px solid var(--border-color);
+            border-radius: 3px;
+            margin-right: 0.75rem;
+            display: grid;
+            place-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+            background: var(--bg-primary);
+        }
+
+        .check-list input[type="checkbox"]:focus-visible {
+            outline: 2px solid var(--accent-terracotta);
+            outline-offset: 2px;
+        }
+
+        .check-list input[type="checkbox"]::before {
+            content: "";
+            width: 0.75rem;
+            height: 0.75rem;
+            transform: scale(0);
+            transition: 120ms transform ease-in-out;
+            box-shadow: inset 1em 1em var(--bg-card);
+            background-color: var(--bg-card);
+            transform-origin: center;
+            clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+        }
+
+        .check-list input[type="checkbox"]:checked {
+            background-color: var(--accent-forest);
+            border-color: var(--accent-forest);
+        }
+
+        .check-list input[type="checkbox"]:checked::before {
+            transform: scale(1);
+        }
+
+        .check-list .check-text {
+            color: var(--text-primary);
+            font-size: clamp(0.8rem, 1.1vw, 0.95rem);
+            line-height: 1.4;
+            transition: color 0.3s ease, text-decoration 0.3s ease, opacity 0.3s ease;
+        }
+
+        .check-list input[type="checkbox"]:checked ~ .check-text {
+            text-decoration: line-through;
+            color: var(--text-muted);
+            opacity: 0.7;
+        }
+
+        /* Two Column Layout */
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: clamp(1rem, 2.5vw, 2rem);
+            margin-top: 0.85rem;
+        }
+
+        .column h3 {
+            margin-bottom: 0.75rem;
+        }
+
+        /* Props Table */
+        .props-table {
+            margin-top: 1rem;
+        }
+
+        .props-table td:first-child {
+            font-family: var(--font-mono);
+            color: var(--accent-forest);
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.7rem;
+            font-family: var(--font-body);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            border-radius: 3px;
+        }
+
+        .status-do {
+            border: 1px solid var(--accent-forest);
+            color: var(--accent-forest);
+        }
+
+        .status-dont {
+            border: 1px solid var(--accent-terracotta);
+            color: var(--accent-terracotta);
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: currentColor;
+            border-radius: 50%;
+        }
+
+        /* Footer Info */
+        .footer-info {
+            position: absolute;
+            bottom: var(--slide-padding);
+            left: var(--slide-padding);
+            right: var(--slide-padding);
+            display: flex;
+            justify-content: space-between;
+            font-size: clamp(0.65rem, 0.9vw, 0.8rem);
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            flex-shrink: 0;
+            z-index: 10;
+            padding-right: 2rem;
+        }
+
+        /* ===========================================
+           RESPONSIVE BREAKPOINTS
+           =========================================== */
+
+        /* Laptop screens - height constrained */
+        @media (max-height: 800px) {
+            :root {
+                --slide-padding: clamp(1.25rem, 3vw, 2rem);
+                --content-gap: clamp(0.75rem, 1.5vw, 1rem);
+            }
+
+            h2 {
+                margin-bottom: clamp(0.75rem, 1.5vw, 1rem);
+            }
+
+            .label {
+                margin-bottom: 0.6rem;
+                font-size: clamp(0.7rem, 1vw, 0.85rem);
+            }
+        }
+
+        @media (max-height: 700px) {
+            :root {
+                --slide-padding: clamp(1rem, 2.5vw, 1.5rem);
+                --content-gap: clamp(0.6rem, 1.2vw, 0.85rem);
+                --h2-size: clamp(1.35rem, 3vw, 1.9rem);
+            }
+
+            .nav-dots {
+                display: none;
+            }
+
+            .label {
+                margin-bottom: 0.5rem;
+            }
+
+            h2 {
+                margin-bottom: 0.6rem;
+            }
+        }
+
+        @media (max-height: 600px) {
+            :root {
+                --title-size: clamp(1.5rem, 4vw, 2.5rem);
+                --h2-size: clamp(1.15rem, 2.5vw, 1.6rem);
+                --h3-size: clamp(1rem, 1.8vw, 1.25rem);
+                --body-size: clamp(0.75rem, 1.1vw, 0.9rem);
+            }
+
+            .bullet-list li,
+            .numbered-list li {
+                padding-top: 0.35rem;
+                padding-bottom: 0.35rem;
+                line-height: 1.4;
+            }
+
+            .callout {
+                padding: 0.6rem 0.85rem;
+                margin: 0.6rem 0;
+            }
+
+            .code-block {
+                padding: 0.65rem 0.85rem;
+                margin: 0.6rem 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-dots {
+                right: 1rem;
+            }
+        }
+
+        @media (max-height: 500px) and (orientation: landscape) {
+            :root {
+                --slide-padding: clamp(0.75rem, 2vw, 1.5rem);
+                --title-size: clamp(1.25rem, 3.5vw, 1.75rem);
+            }
+
+            .footer-info {
+                display: none;
+            }
+        }
+
+        /* Specific fixes for dense content slides */
+        .slide[data-slide="4"] .two-column {
+            gap: 1rem;
+        }
+
+        .slide[data-slide="4"] h4 {
+            margin-bottom: 0.35rem;
+            font-size: 0.85rem;
+        }
+
+        .slide[data-slide="4"] p {
+            font-size: clamp(0.7rem, 1vw, 0.8rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .slide[data-slide="11"] .code-block {
+            margin: 0.6rem 0;
+        }
+
+        .slide[data-slide="11"] .callout {
+            margin: 0.6rem 0;
+        }
+
+        .slide[data-slide="11"] .table-container {
+            margin: 0.6rem 0;
+        }
+
+        .slide[data-slide="12"] .numbered-list li,
+        .slide[data-slide="26"] .check-list li,
+        .slide[data-slide="28"] .bullet-list li {
+            padding-top: 0.4rem;
+            padding-bottom: 0.4rem;
+        }
+
+        .slide[data-slide="28"] .three-tables h3 {
+            font-size: clamp(0.8rem, 1.2vw, 0.95rem);
+            margin-bottom: 0.4rem;
+        }
+
+        .slide[data-slide="28"] .three-tables p {
+            font-size: clamp(0.7rem, 1vw, 0.8rem);
+            margin-bottom: 0.35rem;
+        }
+
+        .slide[data-slide="28"] .three-tables .bullet-list {
+            margin: 0.5rem 0;
+        }
+
+        .slide[data-slide="28"] .three-tables .bullet-list li {
+            padding: 0.35rem 0;
+            font-size: clamp(0.7rem, 1vw, 0.8rem);
+        }
+
+        /* Three column grid for database tables */
+        .three-tables {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: clamp(0.75rem, 1.5vw, 1rem);
+        }
+
+        @media (max-width: 900px) {
+            .three-tables {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .three-tables {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Hide footer on very constrained screens */
+        @media (max-height: 650px) {
+            .footer-info {
+                display: none;
+            }
+        }
+
+        /* Compact callout for dense slides */
+        .callout.compact {
+            padding: 0.6rem 0.85rem;
+            margin: 0.6rem 0;
+        }
+
+        .callout.compact p {
+            font-size: clamp(0.7rem, 1vw, 0.85rem);
+            line-height: 1.45;
+        }
+
+        .callout.compact .callout-title {
+            font-size: clamp(0.65rem, 0.9vw, 0.75rem);
+            margin-bottom: 0.4rem;
+        }
+
+        /* Remap table inside callouts */
+        .remap-table {
+            font-size: clamp(0.65rem, 0.9vw, 0.75rem);
+            margin-top: 0.4rem;
+            width: auto;
+        }
+
+        .remap-table td {
+            padding: 0.2rem 0.4rem;
+            border: none;
+            line-height: 1.4;
+        }
+
+        .remap-table .muted {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .muted {
+            color: var(--text-muted);
+        }
+
+        .small {
+            font-size: clamp(0.65rem, 0.9vw, 0.75rem);
+            margin-top: 0.4rem;
+        }
+
+        /* Compact numbered list */
+        .numbered-list.compact-list {
+            margin: 0.6rem 0;
+        }
+
+        .numbered-list.compact-list li {
+            padding: 0.4rem 0;
+            padding-left: 2.25rem;
+            font-size: clamp(0.75rem, 1.1vw, 0.9rem);
+            line-height: 1.4;
+        }
+
+        .numbered-list.compact-list li::before {
+            width: 1.5rem;
+            height: 1.5rem;
+            font-size: 0.7rem;
+        }
+
+        /* ===========================================
+           REDUCED MOTION
+           =========================================== */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.2s !important;
+            }
+
+            html {
+                scroll-behavior: auto;
+            }
+
+            body::before {
+                display: none;
+            }
+        }
+
+        /* Keyboard Hint */
+        .keyboard-hint {
+            position: fixed;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            opacity: 0.5;
+            z-index: 100;
+        }
+
+        .keyboard-hint kbd {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 0.2em 0.5em;
+            margin: 0 0.25em;
+            border-radius: 3px;
+            box-shadow: var(--shadow-soft);
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+
+    <nav class="nav-dots" id="navDots"></nav>
+
+    <div class="keyboard-hint">
+        <kbd>←</kbd> <kbd>→</kbd> or <kbd>Space</kbd> to navigate
+    </div>
+
+    <!-- SLIDE 1: Title -->
+    <section class="slide title-slide" data-slide="1">
+        <div class="slide-content">
+            <div class="label">Technical Guide</div>
+            <h1 class="reveal">Unleash Feature Flagging Guide</h1>
+            <p class="subtitle reveal">A comprehensive guide to fearless deployment with Unleash</p>
+            <div class="meta reveal">
+                <span class="accent">SPACE:</span> PRODUCT  &nbsp;|&nbsp;
+                <span class="accent">AUDIENCE:</span> Frontend (Engineering), Product Managers, QA &nbsp;|&nbsp;
+                <span class="accent">UPDATED:</span> March 2026
+            </div>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>1 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 2: What You'll Learn -->
+    <section class="slide" data-slide="2">
+        <div class="slide-content">
+            <div class="label">Objectives</div>
+            <h2 class="reveal">What You'll Learn</h2>
+            <ol class="numbered-list reveal">
+                <li>Explain how Unleash organizes feature flags and why we use them</li>
+                <li>Understand the full feature development pipeline—from A/B test to LTS</li>
+                <li>Set up a local Unleash server and import flag configurations</li>
+                <li>Build experiment code using our containment pattern (<code>FlagSwitch</code>)</li>
+                <li>Record observations and speculative data through GraphQL</li>
+                <li>Navigate accelerated Code Review, QA, and Release Management</li>
+                <li>Retire a flag cleanly when the experiment is over</li>
+            </ol>
+            <div class="callout reveal">
+                <div class="callout-title">Why This Matters</div>
+                <p>Feature flags let us test ideas with real users, roll features out gradually, and roll them back instantly—all without redeploying code. Our goal: complete in-platform A/B testing within a weekly cycle.</p>
+            </div>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>2 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 4: Section Divider - Part 1 -->
+    <section class="slide section-divider" data-slide="3">
+        <div class="slide-content">
+            <div class="part-number reveal">PART 01</div>
+            <h1 class="reveal">Core Concepts</h1>
+            <p class="reveal">Understanding the Unleash hierarchy and feature development lifecycle</p>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>3 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 5: The Unleash Hierarchy -->
+    <section class="slide" data-slide="4">
+        <div class="slide-content">
+            <div class="label">Architecture</div>
+            <h2 class="reveal">The Unleash Hierarchy</h2>
+            <p class="reveal">Everything in Unleash nests inside this structure:</p>
+            <div class="reveal" style="text-align: center; margin: 1rem 0;">
+                <img src='https://i.postimg.cc/KYgFT0kH/Gemini-Generated-Image-2y34v32y34v32y34-Photoroom.png' alt="Unleash Hierarchy Diagram" width="500" height="400" style="max-width: 90%; height: auto; border-radius: 8px; box-shadow: var(--shadow-medium);">
+            </div>
+            <div class="two-column reveal" style="font-size: 0.85rem; gap: 1.5rem;">
+                <div>
+                    <h4 style="color: var(--accent-forest); margin-bottom: 0.5rem;">Project</h4>
+                    <p style="font-size: 0.8rem;">Top-level container. We have one: <strong>Roadmaps</strong>.</p>
+                </div>
+                <div>
+                    <h4 style="color: var(--accent-forest); margin-bottom: 0.5rem;">Environment</h4>
+                    <p style="font-size: 0.8rem;">Isolated contexts: <strong>development</strong>, <strong>QA</strong>, <strong>production</strong>.</p>
+                </div>
+                <div>
+                    <h4 style="color: var(--accent-forest); margin-bottom: 0.5rem;">Feature Flag</h4>
+                    <p style="font-size: 0.8rem;">The toggle. Enable/disable per environment with variants and constraints.</p>
+                </div>
+                <div>
+                    <h4 style="color: var(--accent-terracotta); margin-bottom: 0.5rem;">Activation Strategy</h4>
+                    <p style="font-size: 0.8rem;">Constraints, segments, sampling and stickiness define who sees the flag. No strategy = flag off.</p>
+                </div>
+            </div>
+            <div class="callout reveal" style="margin-top: 0.75rem;">
+                <div class="callout-title">Key Rule</div>
+                <p>A <span class="accent">disabled flag</span> must always deliver the standard LTS experience. <strong>No surprises.</strong></p>
+            </div>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>4 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 6: Three Stages of Feature Development -->
+    <section class="slide" data-slide="5">
+        <div class="slide-content">
+            <div class="label">Lifecycle</div>
+            <h2 class="reveal">Three Stages of Feature Development</h2>
+            <div class="stage-flow reveal" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin: 1.5rem 0;">
+                <div style="border: 2px solid var(--accent-warm-gray); border-radius: 8px; padding: 1rem 1.25rem; text-align: center; opacity: 0.7; min-width: 140px;">
+                    <div style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent-warm-gray); margin-bottom: 0.25rem;">Stage 1</div>
+                    <div style="font-weight: 600; font-size: 0.9rem;">Discovery<br>& Design</div>
+                    <div style="font-size: 0.65rem; margin-top: 0.5rem; color: var(--text-muted);">out of scope</div>
+                </div>
+                <div style="color: var(--accent-forest); font-size: 1.5rem;">→</div>
+                <div style="border: 2px solid var(--accent-forest); border-radius: 8px; padding: 1rem 1.25rem; text-align: center; background: rgba(45, 90, 61, 0.08); min-width: 140px;">
+                    <div style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent-forest); margin-bottom: 0.25rem;">Stage 2</div>
+                    <div style="font-weight: 600; font-size: 0.9rem;">In-Platform <br>A/B Testing</div>
+                    <div style="font-size: 0.65rem; margin-top: 0.5rem; color: var(--accent-forest);">this guide</div>
+                </div>
+                <div style="color: var(--accent-forest); font-size: 1.5rem;">→</div>
+                <div style="border: 2px solid var(--accent-terracotta); border-radius: 8px; padding: 1rem 1.25rem; text-align: center; min-width: 140px;">
+                    <div style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent-terracotta); margin-bottom: 0.25rem;">Stage 3</div>
+                    <div style="font-weight: 600; font-size: 0.9rem;">Long-Term<br>Support (LTS)</div>
+                    <div style="font-size: 0.65rem; margin-top: 0.5rem; color: var(--text-muted);">permanent</div>
+                </div>
+            </div>
+            <p class="reveal">Understanding where your work sits determines which rules, review standards, and deployment processes apply.</p>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>5 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 7: Stage 2 - A/B Testing -->
+    <section class="slide" data-slide="6">
+        <div class="slide-content">
+            <div class="label">Stage 2</div>
+            <h2 class="reveal">In-Platform A/B Testing</h2>
+            <p class="reveal">The goal: implement, review, deploy, and analyze experiments as quickly as possible.</p>
+            <ul class="bullet-list reveal">
+                <li><span class="accent">Ticket, flag and branch labeling</span> — clearly separates experiments from LTS work</li>
+                <li><span class="accent">Feature flagging with Unleash</span> — contains risk and increases information gain</li>
+                <li><span class="accent">Code interface containment</span> — isolates experiment code from production data</li>
+                <li><span class="accent">Accelerated Code Review</span> — focused on risk containment, not polish</li>
+                <li><span class="accent">Accelerated QA</span> — focused on non-breaking behavior</li>
+                <li><span class="accent">Per-experiment release management</span> — validates flag configuration</li>
+            </ul>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>6 / 32</span>
+        </div>
+    </section>
+
+<!-- SLIDE 8: Naming Conventions -->
+    <section class="slide" data-slide="7">
+        <div class="slide-content">
+            <div class="label">Standards</div>
+            <h2 class="reveal">Naming Conventions</h2>
+            <div class="table-container reveal">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>When to Use</th>
+                            <th>Pattern</th>
+                            <th>Example</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>A/B tests tied to tickets</td>
+                            <td><code>TEAMX-###-description</code></td>
+                            <td><code>TEAME-177-brain-break</code></td>
+                        </tr>
+                        
+                        <tr>
+                            <td>Graduated release shutoff (inverted)</td>
+                            <td><code>LTS-shutoff-TEAMX-###-*</code></td>
+                            <td><code>LTS-shutoff-TEAME-177-brain-break</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="reveal" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 1.25rem;">
+                <div class="column" style="text-align: center;">
+                    <h3>Git Branches</h3>
+                    <p>A/B Tests: <code>experiment/TEAM?-####-short-desc</code></p>
+                    <p>LTS: <code>feature/LTS-shutoff-TEAM?-####-short-desc</code></p>
+                </div>
+                <div class="column" style="text-align: center;">
+                    <h3>Frontend Folders</h3>
+                    <p><code>frontend/src/experiments/<br>TEAM?-###/</code></p>
+                </div>
+                <div class="column" style="text-align: center;">
+                    <h3>Jira Labels</h3>
+                    <p><code>A/B Test</code> + <code>Automated Regression Checks Only</code></p>
+                </div>
+            </div>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>7 / 32</span>
+        </div>
+    </section>
+
+        <!-- SLIDE 9: Feature Flag Lifecycle -->
+    <section class="slide" data-slide="8">
+        <div class="slide-content">
+            <div class="label">Lifecycle</div>
+            <h2 class="reveal">The Feature Flag Lifecycle</h2>
+            <p class="reveal">A flag is born, lives a useful life, and retires:</p>
+
+            <div class="reveal" style="margin-top: 1.5rem;">
+                <!-- Top row: Steps 1-2-3 -->
+                <div style="display: flex; justify-content: center; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                    <div style="border: 2px solid var(--accent-forest); border-radius: 8px; padding: 0.6rem 0.8rem; text-align: center; background: rgba(45, 90, 61, 0.06); width: 130px;">
+                        <div style="font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent-forest); margin-bottom: 0.2rem;">1. Creation</div>
+                        <div style="font-size: 0.7rem; line-height: 1.3;">PM creates flag</div>
+                    </div>
+                    <div style="color: var(--accent-forest); font-size: 1.25rem;">→</div>
+                    <div style="border: 2px solid var(--accent-forest); border-radius: 8px; padding: 0.6rem 0.8rem; text-align: center; background: rgba(45, 90, 61, 0.06); width: 130px;">
+                        <div style="font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent-forest); margin-bottom: 0.2rem;">2. Configuration</div>
+                        <div style="font-size: 0.7rem; line-height: 1.3;">Constraints & Variants</div>
+                    </div>
+                    <div style="color: var(--accent-forest); font-size: 1.25rem;">→</div>
+                    <div style="border: 2px solid var(--accent-forest); border-radius: 8px; padding: 0.6rem 0.8rem; text-align: center; background: rgba(45, 90, 61, 0.06); width: 130px;">
+                        <div style="font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent-forest); margin-bottom: 0.2rem;">3. Local Dev</div>
+                        <div style="font-size: 0.7rem; line-height: 1.3;">Build experiment</div>
+                    </div>
+                </div>
+
+                <!-- CR+QA label -->
+                <div style="text-align: center; margin-bottom: 0.25rem;">
+                    <span style="font-size: 0.6rem; color: var(--text-muted); border: 1px dashed var(--border-color); padding: 0.15rem 0.5rem; border-radius: 4px;">⚡ CR + QA</span>
+                </div>
+
+                <!-- Arrow down -->
+                <div style="text-align: center; margin-bottom: 0.25rem;">
+                    <span style="color: var(--accent-forest); font-size: 1.25rem;">↓</span>
+                </div>
+
+                <!-- Step 4 -->
+                <div style="display: flex; justify-content: center; margin-bottom: 0.25rem;">
+                    <div style="border: 2px solid var(--accent-terracotta); border-radius: 8px; padding: 0.6rem 0.8rem; text-align: center; background: rgba(196, 93, 58, 0.06); width: 130px;">
+                        <div style="font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent-terracotta); margin-bottom: 0.2rem;">4. Release</div>
+                        <div style="font-size: 0.7rem; line-height: 1.3;">Gradual rollout</div>
+                    </div>
+                </div>
+
+                <!-- Branching arrows -->
+                <div style="display: flex; justify-content: center; gap: 80px; margin-bottom: 0.25rem;">
+                    <span style="color: var(--accent-forest); font-size: 1.5rem;">↙</span>
+                    <span style="color: var(--accent-terracotta); font-size: 1.5rem;">↘</span>
+                </div>
+
+                <!-- Two branches -->
+                <div style="display: flex; justify-content: center; gap: 4rem;">
+                    <!-- Winner (LEFT) -->
+                    <div style="text-align: center;">
+                        <div style="font-size: 0.65rem; color: var(--accent-forest); margin-bottom: 0.2rem; font-weight: 600;">✓ Winner</div>
+                        <div style="border: 2px solid var(--accent-forest); border-radius: 8px; padding: 0.5rem 0.6rem; width: 100px; background: rgba(45, 90, 61, 0.06); margin-bottom: 0.15rem;">
+                            <div style="font-size: 0.5rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent-forest);">5. LTS Conversion</div>
+                            <div style="font-size: 0.6rem; line-height: 1.2;">Rebuild for LTS</div>
+                        </div>
+                        <div style="color: var(--accent-warm-gray); font-size: 1rem; margin: 0.1rem 0;">↓</div>
+                        <div style="border: 2px solid var(--accent-warm-gray); border-radius: 8px; padding: 0.5rem 0.6rem; width: 100px;">
+                            <div style="font-size: 0.5rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent-warm-gray);">6. Retirement</div>
+                            <div style="font-size: 0.6rem; line-height: 1.2;">Archive code</div>
+                        </div>
+                    </div>
+                    <!-- No Winner (RIGHT) -->
+                    <div style="text-align: center;">
+                        <div style="font-size: 0.65rem; color: var(--accent-terracotta); margin-bottom: 0.2rem; font-weight: 600;">✗ No Winner</div>
+                        <div style="border: 2px solid var(--accent-terracotta); border-radius: 8px; padding: 0.5rem 0.6rem; width: 100px; background: rgba(196, 93, 58, 0.06); margin-bottom: 0.15rem;">
+                            <div style="font-size: 0.5rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent-terracotta);">5. Kill Experiment</div>
+                            <div style="font-size: 0.6rem; line-height: 1.2;">Keep control</div>
+                        </div>
+                        <div style="color: var(--accent-warm-gray); font-size: 1rem; margin: 0.1rem 0;">↓</div>
+                        <div style="border: 2px solid var(--accent-warm-gray); border-radius: 8px; padding: 0.5rem 0.6rem; width: 100px;">
+                            <div style="font-size: 0.5rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent-warm-gray);">6. Retirement</div>
+                            <div style="font-size: 0.6rem; line-height: 1.2;">Archive code</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>8 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 10: Constraints & Variants -->
+    <section class="slide" data-slide="9">
+        <div class="slide-content">
+            <div class="label">Configuration</div>
+            <h2 class="reveal">Constraints & Variants</h2>
+            <div class="two-column">
+                <div class="column reveal">
+                    <h3 class="accent-magenta">Constraints</h3>
+                    <p>Target the flag to specific users by:</p>
+                    <ul class="bullet-list">
+                        <li><strong>User ID</strong> — target specific users for internal testing</li>
+                        <li><strong>Network ID</strong> — target specific networks for production</li>
+                        <li><strong>Environment</strong> — staging vs. production</li>
+                        <li><strong>Percentage</strong> — gradual rollout from 0–100%</li>
+                    </ul>
+                </div>
+                <div class="column reveal">
+                    <h3 class="accent">Variants</h3>
+                    <p>Different flavors of the experience you're testing:</p>
+                    <div class="code-block">
+<pre><span class="keyword">Flag:</span> TEAME-177-brain-break
+<span class="keyword">Variants:</span>
+  - <span class="attr">name:</span> <span class="string">control</span>
+    <span class="attr">weight:</span> <span class="variable">50</span>
+  - <span class="attr">name:</span> <span class="string">treatment</span>
+    <span class="attr">weight:</span> <span class="variable">50</span></pre>
+                    </div>
+                </div>    
+            </div>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>9 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 11: Section Divider - Part 2 -->
+    <section class="slide section-divider" data-slide="10">
+        <div class="slide-content">
+            <div class="part-number reveal">PART 02</div>
+            <h1 class="reveal">Local Unleash Setup</h1>
+            <p class="reveal">Hands-on: Get your local environment running</p>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>10 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 12: Start Local Server -->
+    <section class="slide" data-slide="11">
+        <div class="slide-content">
+            <div class="label">Step 1</div>
+            <h2 class="reveal">Start the Local Server</h2>
+            <p class="reveal">Make sure Docker is running, then:</p>
+            <div class="code-block reveal">
+<pre><span class="comment"># Clone and start Unleash</span>
+git clone git@github.com:<span class="string">Unleash/unleash.git</span>
+cd unleash
+docker compose up -d</pre>
+            </div>
+            <div class="callout reveal">
+                <div class="callout-title">Access the Dashboard</div>
+                <p>Open <span class="accent">http://localhost:4242</span> and log in with:</p>
+            </div>
+            <div class="table-container reveal">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Username</td>
+                            <td><code>admin</code></td>
+                        </tr>
+                        <tr>
+                            <td>Password</td>
+                            <td><code>unleash4all</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>11 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 13: Create the Flag -->
+    <section class="slide" data-slide="12">
+        <div class="slide-content">
+            <div class="label">Step 2</div>
+            <h2 class="reveal">Create the Flag</h2>
+            <p class="reveal">Create your first flag locally. Same experience on local and Enterprise:</p>
+            <ol class="numbered-list reveal">
+                <li>Go to <strong>Projects → default</strong></li>
+                <li>Click <strong>Add new feature flag</strong></li>
+                <li>Enter flag name (e.g., <code>TEAME-177-brain-break</code>)</li>
+                <li>Set flag type (typically "Experiment" for A/B tests)</li>
+                <li>Click <strong>Create feature flag</strong> then select your new flag</li>
+                <li>Configure any constraints (optional)</li>
+                <li>Add variants with weights</li>
+            </ol>
+            <div class="callout reveal">
+                <div class="callout-title">Workflow</div>
+                <p>Create locally first → build & test → export → send JSON to PM to import into Enterprise.</p>
+            </div>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>12 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 14: Import & Connect -->
+    <section class="slide" data-slide="13">
+        <div class="slide-content">
+            <div class="label">Steps 3-4</div>
+            <h2 class="reveal">Import & Connect</h2>
+            <div class="two-column">
+                <div class="column reveal">
+                    <h3 class="accent">Import the Flag</h3>
+                    <ol class="numbered-list">
+                        <li>Go to <strong>Projects → default</strong></li>
+                        <li>Click <strong>Import</strong></li>
+                        <li>Select an environment</li>
+                        <li>Click <strong>Validate</strong></li>
+                        <li>Click <strong>Import Configuration</strong></li>
+                    </ol>
+                </div>
+                <div class="column reveal">
+                    <h3 class="accent">Connect the Frontend</h3>
+                    <p>Add to <code>marvin/frontend/.env</code>:</p>
+                    <div class="code-block">
+<pre><span class="attr">VITE_UNLEASH_URL</span>=<span class="string">http://localhost:4242/api/frontend</span>
+<span class="attr">VITE_UNLEASH_CLIENT_KEY</span>=<span class="string">YOUR_KEY</span></pre>
+                    </div>
+                    <p style="font-size: 0.75rem; margin-top: 0.5rem;">Get your API key from <strong>Admin Settings → Access control → API access</strong></p>
+                </div>
+            </div>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>13 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 15: Checkpoint - Part 2 -->
+    <section class="slide" data-slide="14">
+        <div class="slide-content">
+            <div class="label">Verification</div>
+            <h2 class="reveal">Checkpoint: Verify Your Setup</h2>
+            <ul class="check-list reveal">
+                <li><label><input type="checkbox"><span class="check-text">Docker container is running</span></label></li>
+                <li><label><input type="checkbox"><span class="check-text">You can log in to http://localhost:4242</span></label></li>
+                <li><label><input type="checkbox"><span class="check-text">Your flag is imported and visible</span></label></li>
+                <li><label><input type="checkbox"><span class="check-text">Your <code>.env</code> has <code>VITE_UNLEASH_URL</code> and <code>VITE_UNLEASH_CLIENT_KEY</code></span></label></li>
+                <li><label><input type="checkbox"><span class="check-text">Your frontend starts without Unleash connection errors</span></label></li>
+            </ul>
+            <div class="callout warning reveal">
+                <div class="callout-title">Troubleshooting</div>
+                <p>If connection fails, verify your API token has <strong>frontend</strong> scope and restart your dev server after updating <code>.env</code>.</p>
+            </div>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>14 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 16: How Flagging Contains Risk -->
+    <section class="slide" data-slide="15">
+        <div class="slide-content">
+            <div class="label">Principles</div>
+            <h2 class="reveal">How Feature Flagging Contains Risk</h2>
+            <div class="numbered-list reveal">
+                <li><strong>Conditional rendering.</strong> The default (non-flagged) experience always matches the previous platform behavior.</li>
+                <li><strong>Remote configuration.</strong> Deactivate experimental features within minutes (15-second polling).</li>
+                <li><strong>Causal logging.</strong> Observations tied to test conditions provide causal impact data.</li>
+                <li><strong>Data safety.</strong> Mask existing data with <code>experiments_speculative_data</code> instead of mutating permanent tables.</li>
+                <li><strong>Auto-expiry.</strong> Flags expire after 1–4 weeks. Cleanup tickets are created at inception.</li>
+            </div>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>15 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 17: Section Divider - Part 3 -->
+    <section class="slide section-divider" data-slide="16">
+        <div class="slide-content">
+            <div class="part-number reveal">PART 03</div>
+            <h1 class="reveal">Code Containment & Development</h1>
+            <p class="reveal">The concrete implementation of containment protocols</p>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>16 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 18: The Containment Rules -->
+    <section class="slide" data-slide="17">
+        <div class="slide-content">
+            <div class="label">Rules</div>
+            <h2 class="reveal">The Containment Rules</h2>
+            <div class="two-column reveal">
+                <div class="column">
+                    <h3><span class="status-badge status-do"><span class="status-dot"></span>DO</span></h3>
+                    <ul class="bullet-list">
+                        <li>Keep ALL experiment code in <code>/experiments/[ticket-#]/</code></li>
+                        <li>Use <code>FlagSwitch</code> for conditional rendering</li>
+                        <li>Record observations via GraphQL</li>
+                        <li>Mask permanent data with speculative data</li>
+                        <li>Pass unit tests and Prettier</li>
+                    </ul>
+                </div>
+                <div class="column">
+                    <h3><span class="status-badge status-dont"><span class="status-dot"></span>DON'T</span></h3>
+                    <ul class="bullet-list">
+                        <li>Build experiment logic in shared components</li>
+                        <li>Skip recording observations</li>
+                        <li>Mutate non-experiment tables</li>
+                        <li>Leave experiment code after retirement</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>17 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 18b: Why These Rules Exist -->
+    <section class="slide" data-slide="17b">
+        <div class="slide-content">
+            <div class="label">Philosophy</div>
+            <h2 class="reveal">Why These Rules Exist</h2>
+            <div class="reveal" style="max-width: 900px; margin: 0 auto;">
+                <p class="accent" style="font-size: clamp(1rem, 1.8vw, 1.35rem); font-weight: 600; margin-bottom: 1rem;">
+                    Containment is what makes speed safe.
+                </p>
+                <p style="font-size: clamp(0.85rem, 1.3vw, 1.1rem); line-height: 1.65; margin-bottom: 1rem;">
+                    Every rule above is designed so that experiment code has <strong>exactly one blast radius</strong>: the experiment itself.
+                </p>
+                <p style="font-size: clamp(0.85rem, 1.3vw, 1.1rem); line-height: 1.65; margin-bottom: 1rem;">
+                    When all logic lives in <code>/experiments/[ticket-#]/</code>, uses <code>FlagSwitch</code> for branching, writes only to speculative data, and is removed upon retirement — <strong>no experiment can touch production behavior, corrupt shared state, or leave behind technical debt.</strong>
+                </p>
+                <p style="font-size: clamp(0.85rem, 1.3vw, 1.1rem); line-height: 1.65; margin-bottom: 1.25rem;">
+                    The rules aren't bureaucratic overhead; they're the reason we can ship fast without a safety net.
+                </p>
+                <div class="callout reveal" style="margin-top: 0.5rem;">
+                    <div class="callout-title">The Guarantee</div>
+                    <p style="font-size: clamp(0.9rem, 1.3vw, 1.1rem); font-weight: 600; color: var(--text-primary);">
+                        Follow them and it is <span class="accent">structurally impossible</span> to break anything outside your experiment.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>18 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 19: Folder Structure -->
+    <section class="slide" data-slide="18">
+        <div class="slide-content">
+            <div class="label">Structure</div>
+            <h2 class="reveal">Folder Structure</h2>
+            <div class="code-block reveal" style="font-size: 0.8rem;">
+<pre><span class="keyword">frontend/src/experiments/</span>
+├── <span class="accent">TEAME-177/</span>                   <span class="comment"># Brain Break experiment</span>
+│   ├── BrainBreakModal/
+│   │   ├── BrainBreakModal.tsx
+│   │   ├── BrainBreakContext.tsx
+│   │   └── ...
+│   ├── AnimatedParticles.tsx
+│   ├── constants.ts
+│   └── hooks/
+│       └── useEngagementTimer.ts
+└── <span class="accent">TEAME-XXX/</span>                   <span class="comment"># Next experiment</span>
+    └── ...</pre>
+            </div>
+            <div class="callout warning reveal">
+                <div class="callout-title">Critical Rule</div>
+                <p>ALL imports of code from the experiments folder MUST only be used inside a <strong>feature-flagged context</strong>.</p>
+            </div>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>19 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 20: FlagSwitch Component -->
+    <section class="slide" data-slide="19">
+        <div class="slide-content">
+            <div class="label">Component</div>
+            <h2 class="reveal">FlagSwitch Component</h2>
+            <p class="reveal"><code>frontend/src/components/FlagSwitch/FlagSwitch.tsx</code></p>
+            <div class="code-block reveal" style="font-size: 0.7rem;">
+<pre><span class="comment">// Real example from Header.tsx - Single variant (on/off)</span>
+<span class="keyword">&lt;FlagSwitch</span>
+  <span class="attr">flagId</span>=<span class="string">"TEAME-124-animated-avatar-icon"</span>
+  <span class="attr">default</span>={<span class="variable">&lt;Avatar image={user.picture} shape="circle" /&gt;</span>}
+  <span class="attr">conditions</span>={{
+    <span class="attr">on</span>: (
+      <span class="variable">&lt;Avatar className="tw-animate-pulse" shape="square"&gt;
+        &lt;p&gt;{user.name.split(' ').map(n =&gt; n[0]).join('')}&lt;/p&gt;
+      &lt;/Avatar&gt;</span>
+    ),
+  }}
+<span class="keyword">/&gt;</span>
+
+<span class="comment">// Real example from Header.tsx - Multiple variants (A/B/C test)</span>
+<span class="keyword">&lt;FlagSwitch</span>
+  <span class="attr">flagId</span>=<span class="string">"TEAME-124-square-icon-variants"</span>
+  <span class="attr">default</span>={<span class="variable">&lt;Avatar image={user.picture} shape="circle" /&gt;</span>}
+  <span class="attr">conditions</span>={{
+    <span class="attr">squareWithBorder</span>: <span class="variable">&lt;Avatar image={user.picture} shape="square" className="tw-border-2" /&gt;</span>,
+    <span class="attr">squareNoBorder</span>: <span class="variable">&lt;Avatar image={user.picture} shape="square" /&gt;</span>,
+  }}
+<span class="keyword">/&gt;</span></pre>
+            </div>
+            <div class="table-container reveal props-table">
+                <table>
+                    <thead>
+                        <tr><th>Prop</th><th>Type</th><th>Required</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>flagId</td><td>string</td><td>Yes</td></tr>
+                        <tr><td>default</td><td>ReactNode</td><td>Yes</td></tr>
+                        <tr><td>conditions</td><td>Record&lt;string, ReactNode&gt;</td><td>Yes</td></tr>
+                        <tr><td>loading</td><td>ReactNode</td><td>No</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>20 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 24: GraphQL Operations -->
+    <section class="slide" data-slide="23">
+        <div class="slide-content">
+            <div class="label">GraphQL</div>
+            <h2 class="reveal">Experiment Mutations</h2>
+            <p class="reveal">Two primary mutations in <code>graphQLOperations/Experiments.ts</code>:</p>
+            <div class="two-column reveal" style="margin-top: 0.5rem;">
+                <div class="column">
+                    <h3 class="accent" style="font-size: clamp(0.9rem, 1.5vw, 1.15rem);">commitObservation</h3>
+                    <ul class="bullet-list" style="font-size: clamp(0.7rem, 1vw, 0.85rem);">
+                        <li><strong>Operation:</strong> <code>addExperimentsObservations</code></li>
+                        <li><strong>Purpose:</strong> Track discrete events</li>
+                        <li><strong>Semantics:</strong> INSERT — creates new record</li>
+                        <li><strong>Data:</strong> Simple counter (0 or 1)</li>
+                        <li><strong>Use:</strong> Clicks, mounts, pass/fail</li>
+                    </ul>
+                </div>
+                <div class="column">
+                    <h3 class="accent-magenta" style="font-size: clamp(0.9rem, 1.5vw, 1.15rem);">commitSpeculativeData</h3>
+                    <ul class="bullet-list" style="font-size: clamp(0.7rem, 1vw, 0.85rem);">
+                        <li><strong>Operation:</strong> <code>upsertExperimentsSpeculativeData</code></li>
+                        <li><strong>Purpose:</strong> Persist user state</li>
+                        <li><strong>Semantics:</strong> UPSERT — updates if exists</li>
+                        <li><strong>Data:</strong> Complex JSON payload</li>
+                        <li><strong>Use:</strong> Preferences, settings</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="callout reveal compact" style="margin-top: 0.5rem;">
+                <div class="callout-title">Key Difference</div>
+                <p>Observations create a <span class="accent">history of events</span> — each call adds a new record. Speculative data stores <span class="accent-magenta">current state</span> — each call replaces the existing record.</p>
+            </div>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>21 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 21: useFlag vs FlagSwitch -->
+    <!-- <section class="slide" data-slide="20">
+        <div class="slide-content">
+            <div class="label">Decision Guide</div>
+            <h2 class="reveal">When to Use <code>useFlag</code> vs <code>FlagSwitch</code></h2>
+            <div class="table-container reveal">
+                <table>
+                    <thead>
+                        <tr><th>Use <code>useFlag</code> when...</th><th>Use <code>FlagSwitch</code> when...</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Simple conditional logic (show/hide)</td><td>Switching between UI variants</td></tr>
+                        <tr><td>Multiple unrelated checks in one component</td><td>A/B testing with multiple variants</td></tr>
+                        <tr><td>Need the boolean for non-rendering logic</td><td>Clean declarative rendering</td></tr>
+                        <tr><td>Guarding routes, side effects, analytics</td><td>Reducing nested ternaries</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="two-column reveal" style="margin-top: 1rem;">
+                <div class="column">
+                    <h3><span class="status-badge status-do"><span class="status-dot"></span>useFlag</span></h3>
+                    <div class="code-block" style="font-size: 0.7rem;">
+<pre><span class="keyword">const</span> hasAnalytics = <span class="function">useFlag</span>(<span class="string">'analytics-enabled'</span>);
+
+<span class="function">useEffect</span>(() => {
+  <span class="keyword">if</span> (hasAnalytics) {
+    <span class="function">trackPageView</span>();
+  }
+}, [hasAnalytics]);</pre>
+                    </div>
+                </div>
+                <div class="column">
+                    <h3><span class="status-badge status-do"><span class="status-dot"></span>FlagSwitch</span></h3>
+                    <div class="code-block" style="font-size: 0.7rem;">
+<pre><span class="keyword">&lt;FlagSwitch</span>
+  <span class="attr">flagId</span>=<span class="string">"button-style"</span>
+  <span class="attr">default</span>={<span class="variable">&lt;Button variant="outlined" /&gt;</span>}
+  <span class="attr">conditions</span>={{
+    <span class="attr">filled</span>: <span class="variable">&lt;Button variant="filled" /&gt;</span>,
+    <span class="attr">ghost</span>: <span class="variable">&lt;Button variant="ghost" /&gt;</span>,
+  }}
+<span class="keyword">/&gt;</span></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>21 / 32</span>
+        </div>
+    </section> -->
+
+    <!-- SLIDE 22: ExperimentTracker Component -->
+    <!-- <section class="slide" data-slide="21">
+        <div class="slide-content">
+            <div class="label">Component</div>
+            <h2 class="reveal">ExperimentTracker Component</h2>
+            <p class="reveal"><code>frontend/src/experiments/ExperimentTracker.tsx</code></p>
+            <div class="code-block reveal">
+<pre><span class="keyword">&lt;ExperimentTracker</span>
+  <span class="attr">userId</span>={<span class="string">`UserNode:${user.id}`</span>}
+  <span class="attr">flagName</span>=<span class="string">"TEAME-177-brain-break"</span>
+  <span class="attr">variantName</span>={currentPlacement}
+  <span class="attr">useRealMutation</span>={<span class="variable">true</span>}
+  <span class="attr">onAssignmentRecorded</span>={(id) => <span class="function">console.log</span>(<span class="string">'Assigned:'</span>, id)}
+<span class="keyword">/&gt;</span>
+
+<span class="comment">// Recording observations via window.experimentTracker</span>
+<span class="variable">window</span>.experimentTracker.<span class="function">recordObservation</span>({
+  <span class="attr">observationType</span>: <span class="string">'button-clicked'</span>,
+  <span class="attr">observation</span>: <span class="variable">1</span>,
+});</pre>
+            </div>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>22 / 32</span>
+        </div>
+    </section> -->
+
+    <!-- SLIDE 23: Putting It Together -->
+    <section class="slide" data-slide="22">
+        <div class="slide-content">
+            <div class="label">Example</div>
+            <h2 class="reveal">Putting It All Together</h2>
+            <div class="code-block reveal" style="font-size: 0.65rem;">
+<pre><span class="keyword">import</span> { useMutation } <span class="keyword">from</span> <span class="string">'react-relay'</span>;
+<span class="keyword">import</span> { FlagSwitch } <span class="keyword">from</span> <span class="string">'../../components/FlagSwitch/FlagSwitch'</span>;
+<span class="keyword">import</span> { recordExperimentObservation } <span class="keyword">from</span> <span class="string">'../../graphQLOperations/Experiments'</span>;
+
+<span class="keyword">const</span> <span class="function">BrainBreakExperiment</span>: FC = () => {
+  <span class="keyword">const</span> { user, currentPlacement } = <span class="function">useBrainBreak</span>();
+  <span class="keyword">const</span> [commitObservation] = <span class="function">useMutation</span>(recordExperimentObservation);
+
+  <span class="keyword">const</span> <span class="function">handleComplete</span> = (passed: <span class="type">boolean</span>) => {
+    <span class="function">commitObservation</span>({
+      <span class="attr">variables</span>: {
+        <span class="attr">input</span>: {
+          <span class="attr">input</span>: {
+            <span class="attr">userId</span>: <span class="string">`UserNode:${user.id}`</span>,
+            <span class="attr">flagName</span>: <span class="string">'TEAME-177-brain-break'</span>,
+            <span class="attr">variantName</span>: currentPlacement,
+            <span class="attr">observationType</span>: <span class="string">'pass_fail'</span>,
+            <span class="attr">observation</span>: passed ? <span class="number">1</span> : <span class="number">0</span>,
+          },
+        },
+      },
+    });
+  };
+
+  <span class="keyword">return</span> (
+    <span class="tag">&lt;FlagSwitch</span>
+      <span class="attr">flagId</span>=<span class="string">"TEAME-177-brain-break"</span>
+      <span class="attr">default</span>={<span class="variable">&lt;StandardExperience onComplete={handleComplete} /&gt;</span>}
+      <span class="attr">conditions</span>={{
+        <span class="attr">control</span>: <span class="variable">&lt;StandardExperience onComplete={handleComplete} /&gt;</span>,
+        <span class="attr">treatment</span>: <span class="variable">&lt;BrainBreakExperience onComplete={handleComplete} /&gt;</span>,
+      }}
+    <span class="tag">/&gt;</span>
+  );
+};</pre>
+            </div>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>22 / 32</span>
+        </div>
+    </section>
+
+    
+
+    <!-- SLIDE 25: Section Divider - Part 4 -->
+    <section class="slide section-divider" data-slide="23">
+        <div class="slide-content">
+            <div class="part-number reveal">PART 04</div>
+            <h1 class="reveal">Review, QA & Release</h1>
+            <p class="reveal">Accelerated processes for rapid experimentation</p>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>23 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 26: Accelerated Code Review -->
+    <section class="slide" data-slide="24">
+        <div class="slide-content">
+            <div class="label">Process</div>
+            <h2 class="reveal">Accelerated Code Review</h2>
+            <p class="reveal">Focus on <span class="accent">risk containment protocol</span>, not engineering quality inside experiments folder.</p>
+            <div class="table-container reveal">
+                <table>
+                    <thead>
+                        <tr><th>What Reviewers Inspect</th><th>How They Inspect</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Changes <strong>OUTSIDE</strong> <code>/experiments/</code></td><td>Reviewed as LTS code—clear, concise, correct</td></tr>
+                        <tr><td>Files importing from <code>/experiments/</code></td><td>Verify imports are guarded behind feature flag</td></tr>
+                        <tr><td>Code <strong>INSIDE</strong> <code>/experiments/</code></td><td>Check ONLY for non-experiment table mutations</td></tr>
+                        <tr><td>Code quality inside experiments</td><td><strong>NOT inspected</strong> for quality or correctness</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <ul class="check-list reveal" style="margin-top: 1rem;">
+                <li><label><input type="checkbox"><span class="check-text">All experiment code in <code>/experiments/[ticket-#]/</code></span></label></li>
+                <li><label><input type="checkbox"><span class="check-text">Uses <code>FlagSwitch</code> for conditional rendering</span></label></li>
+                <li><label><input type="checkbox"><span class="check-text">No imports outside feature-flagged context</span></label></li>
+            </ul>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>24 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 27: Accelerated QA -->
+    <section class="slide" data-slide="25">
+        <div class="slide-content">
+            <div class="label">Process</div>
+            <h2 class="reveal">Accelerated QA</h2>
+            <p class="reveal">Ensure experiments <span class="accent">don't break non-experimental parts</span> of the experience.</p>
+            <div class="two-column reveal">
+                <div class="column">
+                    <h3><span class="status-badge status-do"><span class="status-dot"></span>TESTS</span></h3>
+                    <ul class="bullet-list">
+                        <li>Default (flag-off) behavior works</li>
+                        <li>Automated regression suites pass</li>
+                        <li>Non-experimental functionality unaffected</li>
+                    </ul>
+                </div>
+                <div class="column">
+                    <h3><span class="status-badge status-dont"><span class="status-dot"></span>SKIP</span></h3>
+                    <ul class="bullet-list">
+                        <li>Usability of experimental feature</li>
+                        <li>Correct experiment activation</li>
+                        <li>Feature completeness</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="callout reveal">
+                <div class="callout-title">Lean on Automation</div>
+                <p>Short-cycle QA leans heavily on <strong>continually-updated automated test suites</strong> for regression testing.</p>
+            </div>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>25 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 28: Release Management -->
+    <section class="slide" data-slide="26">
+        <div class="slide-content">
+            <div class="label">Process</div>
+            <h2 class="reveal">Per-Experiment Release Management</h2>
+            <p class="reveal">Validate flag configuration—no UAT of functionality required.</p>
+            <ul class="check-list reveal">
+                <li><label><input type="checkbox"><span class="check-text">Right audiences are targeted</span></label></li>
+                <li><label><input type="checkbox"><span class="check-text">Rollout plan is defined (tier-based per Program Success)</span></label></li>
+                <li><label><input type="checkbox"><span class="check-text">Cutoff date is set</span></label></li>
+                <li><label><input type="checkbox"><span class="check-text">Experiment don't show up when flag off</span></label></li>
+                <li><label><input type="checkbox"><span class="check-text">Rollback procedure is documented</span></label></li>
+                <li><label><input type="checkbox"><span class="check-text">PM has a plan to monitor the experiment</span></label></li>
+            </ul>
+            <div class="callout warning reveal">
+                <div class="callout-title">Production Control</div>
+                <p><strong>Only Release Management</strong> can turn a flag ON in production. Product Owners and DevOps can turn flags OFF.</p>
+            </div>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>26 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 29: Section Divider - Part 5 -->
+    <section class="slide section-divider" data-slide="27">
+        <div class="slide-content">
+            <div class="part-number reveal">PART 05</div>
+            <h1 class="reveal">Data Logging</h1>
+            <p class="reveal">Where experiment data lands and what it looks like</p>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>27 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 30: Database Tables -->
+    <section class="slide" data-slide="28">
+        <div class="slide-content">
+            <div class="label">Schema</div>
+            <h2 class="reveal">Database Tables</h2>
+            <div class="three-tables">
+                <div class="reveal">
+                    <h3 class="accent">flag_history</h3>
+                    <p>User variant assignments</p>
+                    <ul class="bullet-list">
+                        <li>user_id (int)</li>
+                        <li>flag_name (varchar)</li>
+                        <li>variant_name (varchar)</li>
+                        <li>created_on (timestamp)</li>
+                    </ul>
+                </div>
+                <div class="reveal">
+                    <h3 class="accent-magenta">observations</h3>
+                    <p>User behavior metrics</p>
+                    <ul class="bullet-list">
+                        <li>user_id (int)</li>
+                        <li>flag_name (varchar)</li>
+                        <li>variant_name (varchar)</li>
+                        <li>observation_type (varchar)</li>
+                        <li>observation (numeric)</li>
+                    </ul>
+                </div>
+                <div class="reveal">
+                    <h3 class="accent-purple">speculative_data</h3>
+                    <p>Temporary client state</p>
+                    <ul class="bullet-list">
+                        <li>user_id (int)</li>
+                        <li>flag_name (varchar)</li>
+                        <li>variant_name (varchar)</li>
+                        <li>payload (JSON)</li>
+                        <li>modified_on (timestamp)</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="table-container reveal">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Observation Type</th>
+                            <th>Observation (Numeric)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>button-clicked</code></td>
+                            <td>0 or 1</td>
+                        </tr>
+                        <tr>
+                            <td><code>confidence</code></td>
+                            <td>0–4</td>
+                        </tr>
+                        <tr>
+                            <td><code>seconds_on_activity</code></td>
+                            <td>0 to infinite</td>
+                        </tr>
+                        <tr>
+                            <td><code>previous_skill_attempts</code></td>
+                            <td>0 or infinite</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- <div class="callout reveal compact">
+                <div class="callout-title">Variant Name Remapping</div>
+                <p>Unleash returns <code>undefined</code> for inactive toggles and <code>"disabled"</code> for single-variant flags. We remap:</p>
+                <table class="remap-table">
+                    <tr><td><code>undefined</code> / <code>NULL</code></td><td>→</td><td><code>"control"</code></td><td class="muted">(default/inactive case)</td></tr>
+                    <tr><td><code>"disabled"</code></td><td>→</td><td><code>"treatment"</code></td><td class="muted">(active, single variant)</td></tr>
+                </table>
+                <p class="muted small">All records have a string variant_name for consistent analytics.</p>
+            </div> -->
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>28 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 31: Flag Retirement -->
+    <section class="slide" data-slide="29">
+        <div class="slide-content">
+            <div class="label">End of Life</div>
+            <h2 class="reveal">Flag Retirement & LTS Conversion</h2>
+            <div class="two-column reveal">
+                <div class="column">
+                    <h3 class="accent">Experiment Succeeded → LTS</h3>
+                    <ol class="numbered-list compact-list">
+                        <li>Remove experimental code</li>
+                        <li>Rebuild for LTS (start fresh)</li>
+                        <li>Update FE automation testing</li>
+                        <li>Release under LTS flag</li>
+                        <li>Monitor 3 months</li>
+                        <li>Remove LTS flag</li>
+                        <li>Archive & document</li>
+                        
+                    </ol>
+                </div>
+                <div class="column">
+                    <h3 class="accent-magenta">Experiment Failed → Cleanup</h3>
+                    <ol class="numbered-list compact-list">
+                        <li>Remove experiment code</li>
+                        <li>Remove all flag references</li>
+                        <li>Archive flag in Unleash</li>
+                        <li>Document learnings</li>
+                    </ol>
+                </div>
+            </div>
+            <div class="callout warning reveal">
+                <div class="callout-title">No Zombie Flags</div>
+                <p>If a flag has served its purpose, <strong>retire it</strong>. Every flag retires.</p>
+            </div>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>29 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 32: Quick Reference -->
+    <section class="slide" data-slide="30">
+        <div class="slide-content">
+            <div class="label">Summary</div>
+            <h2 class="reveal">Quick-Reference Summary</h2>
+            <div class="table-container reveal">
+                <table>
+                    <thead>
+                        <tr><th>Principle</th><th>Why</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Code contained in <code>/experiments/[ticket-#]/</code></td><td>Isolates risk; enables accelerated review</td></tr>
+                        <tr><td>Disabled flags deliver LTS experience</td><td>Users never see broken/incomplete state</td></tr>
+                        <tr><td>Don't mutate permanent data in new ways</td><td>Prevents data integrity failures</td></tr>
+                        <tr><td>Flags auto-expire (1–4 weeks)</td><td>Prevents zombie flags</td></tr>
+                        <tr><td>Cleanup tickets at experiment inception</td><td>Ensures follow-through</td></tr>
+                        <tr><td>CR checks containment, not quality</td><td>Optimizes for speed of learning</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>30 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 33: Role Responsibilities -->
+    <section class="slide" data-slide="31">
+        <div class="slide-content">
+            <div class="label">Who Does What</div>
+            <h2 class="reveal">Role Responsibilities</h2>
+            <div class="table-container reveal">
+                <table>
+                    <thead>
+                        <tr><th>Role</th><th>Responsibilities</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><strong>Product Owner</strong></td><td>Creates flag; exports config; creates cleanup ticket; monitors data; decides outcome</td></tr>
+                        <tr><td><strong>Developer</strong></td><td>Imports flag locally; builds in containment folder; records & confirms observations</td></tr>
+                        <tr><td><strong>Code Reviewer</strong></td><td>Validates containment rules; checks for data mutation violations</td></tr>
+                        <tr><td><strong>QA</strong></td><td>Validates flag-off behavior; runs automated regression</td></tr>
+                        <tr><td><strong>Release Mgmt</strong></td><td>Validates configuration; manages production activation; controls rollout</td></tr>
+                        <tr><td><strong>DevOps</strong></td><td>Can deactivate flags in production; monitors <code>#production-flags</code></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>31 / 32</span>
+        </div>
+    </section>
+
+    <!-- SLIDE 34: Questions -->
+    <section class="slide title-slide" data-slide="32">
+        <div class="slide-content" style="text-align: center;">
+            <h1 class="reveal">Questions?</h1>
+            <p class="reveal" style="margin-top: 1rem;">Product Managers can contact (S)am</p>
+            <p class="reveal" style="margin-top: 1rem;">Frontend Engineers can contact Luis or refer to the linked documentation.</p>
+            <div class="reveal" style="margin-top: 2rem; font-family: var(--font-mono); font-size: var(--small-size); color: var(--text-muted);">
+                <p>Related Docs: Local Development with Unleash • Experiments Technical Documentation</p>
+                <p>How to Use Unleash • Unleash Release Flag Management</p>
+            </div>
+        </div>
+        <div class="footer-info">
+            <span>Feature Flagging Guide</span>
+            <span>32 / 32</span>
+        </div>
+    </section>
+
+    <script>
+        /* ===========================================
+           SLIDE PRESENTATION CONTROLLER
+           Handles navigation, animations, and interactions
+           =========================================== */
+
+        class SlidePresentation {
+            constructor() {
+                this.slides = document.querySelectorAll('.slide');
+                this.currentSlide = 0;
+                this.totalSlides = this.slides.length;
+                this.progressBar = document.getElementById('progressBar');
+                this.navDots = document.getElementById('navDots');
+
+                this.init();
+            }
+
+            init() {
+                // Create navigation dots
+                this.createNavDots();
+
+                // Set up Intersection Observer for animations
+                this.setupIntersectionObserver();
+
+                // Set up keyboard navigation
+                this.setupKeyboardNavigation();
+
+                // Set up scroll handling
+                this.setupScrollHandling();
+
+                // Initial update
+                this.updateProgress();
+            }
+
+            createNavDots() {
+                for (let i = 0; i < this.totalSlides; i++) {
+                    const dot = document.createElement('button');
+                    dot.className = 'nav-dot';
+                    dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
+                    if (i === 0) dot.classList.add('active');
+                    dot.addEventListener('click', () => this.goToSlide(i));
+                    this.navDots.appendChild(dot);
+                }
+            }
+
+            setupIntersectionObserver() {
+                const options = {
+                    root: null,
+                    rootMargin: '0px',
+                    threshold: 0.5
+                };
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                            // Find the actual index of this slide in our slides array
+                            const slideIndex = Array.from(this.slides).indexOf(entry.target);
+                            if (slideIndex !== -1) {
+                                this.currentSlide = slideIndex;
+                                this.updateProgress();
+                                this.updateNavDots();
+                            }
+                        }
+                    });
+                }, options);
+
+                this.slides.forEach((slide, index) => {
+                    // Store index on element for reference
+                    slide.dataset.index = index;
+                    observer.observe(slide);
+                });
+            }
+
+            setupKeyboardNavigation() {
+                document.addEventListener('keydown', (e) => {
+                    switch(e.key) {
+                        case 'ArrowRight':
+                        case 'ArrowDown':
+                        case ' ':
+                            e.preventDefault();
+                            this.nextSlide();
+                            break;
+                        case 'ArrowLeft':
+                        case 'ArrowUp':
+                            e.preventDefault();
+                            this.prevSlide();
+                            break;
+                        case 'Home':
+                            e.preventDefault();
+                            this.goToSlide(0);
+                            break;
+                        case 'End':
+                            e.preventDefault();
+                            this.goToSlide(this.totalSlides - 1);
+                            break;
+                    }
+                });
+            }
+
+            setupScrollHandling() {
+                let scrollTimeout;
+                window.addEventListener('scroll', () => {
+                    clearTimeout(scrollTimeout);
+                    scrollTimeout = setTimeout(() => {
+                        this.updateProgress();
+                    }, 10);
+                });
+            }
+
+            nextSlide() {
+                if (this.currentSlide < this.totalSlides - 1) {
+                    this.goToSlide(this.currentSlide + 1);
+                }
+            }
+
+            prevSlide() {
+                if (this.currentSlide > 0) {
+                    this.goToSlide(this.currentSlide - 1);
+                }
+            }
+
+            goToSlide(index) {
+                if (index >= 0 && index < this.totalSlides) {
+                    this.slides[index].scrollIntoView({ behavior: 'smooth' });
+                    this.currentSlide = index;
+                    this.updateProgress();
+                    this.updateNavDots();
+                }
+            }
+
+            updateProgress() {
+                const progress = ((this.currentSlide + 1) / this.totalSlides) * 100;
+                this.progressBar.style.width = `${progress}%`;
+            }
+
+            updateNavDots() {
+                const dots = this.navDots.querySelectorAll('.nav-dot');
+                dots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === this.currentSlide);
+                });
+            }
+        }
+
+        // Initialize presentation when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            new SlidePresentation();
+
+            // Hide keyboard hint after first interaction
+            const hint = document.querySelector('.keyboard-hint');
+            let hintHidden = false;
+
+            const hideHint = () => {
+                if (!hintHidden) {
+                    hint.style.opacity = '0';
+                    hintHidden = true;
+                }
+            };
+
+            document.addEventListener('keydown', hideHint, { once: true });
+            document.addEventListener('click', hideHint, { once: true });
+
+            // Auto-hide hint after 5 seconds
+            setTimeout(hideHint, 5000);
+        });
+    </script>
+</body>
+</html>
